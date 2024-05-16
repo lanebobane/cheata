@@ -37,37 +37,62 @@ class DataPoint():
 
 class DataPoints():
 
-	def __init__(self, file_name):
-		self.data_points = self._parse_gpx_file(file_name)
+	def __init__(self, file_name, node_type):
+		self.data_points = self._parse_gpx_file(file_name, node_type)
 		self.normalize_dates()
 
-	def _parse_gpx_file(self, file_name):
+	def _parse_gpx_file(self, file_name, node_type):
+		# <wpt> vs <trkpt>
 		tree = ET.parse(file_name)
 		root = tree.getroot()
 		data_points = []
 
-		for root_child in root:
-			data_dict = {
-				"lat": root_child.attrib['lat'],
-				"lon": root_child.attrib['lon'],
-				"ele": None, 
-				"time": None, 
-				"extensions": None
-			}
-				
-			for child in root_child:
-				key = child.tag.split('}')[1]
-				data_dict[key] = child.text
+		if node_type == 'wpt':
+			for root_child in root:
+				data_dict = {
+					"lat": root_child.attrib['lat'],
+					"lon": root_child.attrib['lon'],
+					"ele": None, 
+					"time": None, 
+					"extensions": None
+				}
+				for child in root_child:
+					key = child.tag.split('}')[1]
+					data_dict[key] = child.text
+				dp = DataPoint(
+					data_dict['lat'],
+					data_dict['lon'],
+					data_dict['ele'],
+					data_dict['time'],
+					data_dict['extensions'],
+					)
+				data_points.append(dp)
 
-			dp = DataPoint(
-				data_dict['lat'],
-				data_dict['lon'],
-				data_dict['ele'],
-				data_dict['time'],
-				data_dict['extensions'],
-				)
 
-			data_points.append(dp)
+		elif node_type == 'trkpt':
+			for trkpt in root[1][2]:
+				data_dict = {
+					"lat": trkpt.attrib['lat'],
+					"lon": trkpt.attrib['lon'],
+					"ele": None, 
+					"time": None, 
+					"extensions": None
+				}
+				for child in trkpt:
+					key = child.tag.split('}')[1]
+					data_dict[key] = child.text
+				dp = DataPoint(
+					data_dict['lat'],
+					data_dict['lon'],
+					data_dict['ele'],
+					data_dict['time'],
+					data_dict['extensions'],
+					)
+				data_points.append(dp)
+
+		else: 
+			print('Invalid node type. Please choose either "wpt" or trkpt" ')
+
 		return data_points
 
 	def data_point_count(self):
@@ -109,8 +134,10 @@ class DataPoints():
 			raise Exception('You cannot reduce the file by more time than its total elapsed time.')
 
 		for dp in self.data_points:
-			new_dt = dp.date - timedelta(seconds=dp.normalized_date * amount)
-			print(new_dt)
+			# new_dt = dp.date - timedelta(seconds=dp.normalized_date * amount)
+			dp.date = dp.date - timedelta(seconds=dp.normalized_date * amount)
+			# print(new_dt)
+			print(dp)
 
 
 
