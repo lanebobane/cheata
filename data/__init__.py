@@ -106,10 +106,6 @@ class DataPoints():
 
 	def time_difference(self): 
 		return self.max_time() - self.min_time()
-	#TODOs: 
-	# 1. sort by date
-	# 2. reduce timeline
-	# 3. increase elevation gained
 
 	def ensure_dates_sorted(self):
 		previous = self.data_points[0]
@@ -127,14 +123,19 @@ class DataPoints():
 			dp.normalized_date = factor
 
 	def reduce_time_by_percentage(self, amount):
-		pass
+		if amount >= 100:
+			raise Exception('You cannot reduce the file by 100% or more.')
 
-	def reduce_time_by_time(self, amount):
-		if self.time_difference() < timedelta(seconds=amount): 
+		# ignore fractional seconds in current time_difference().
+		self.reduce_time_by_time((amount/100)*self.time_difference())
+
+
+	def reduce_time_by_time(self, delta):
+		if self.time_difference() < delta:
 			raise Exception('You cannot reduce the file by more time than its total elapsed time.')
 
 		for dp in self.data_points:
-			dp.date = dp.date - timedelta(seconds=dp.normalized_date * amount)
+			dp.date = dp.date - (dp.normalized_date * delta)
 
 
 

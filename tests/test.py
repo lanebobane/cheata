@@ -10,6 +10,7 @@ from data import DataPoint, DataPoints
 
 
 def test_parse_gpx_file_wpt():
+	print('******************')
 	print('Running test_parse_gpx_file_1')
 	dps = DataPoints('./tests/sample_gpx1.gpx', 'wpt')
 	try:
@@ -24,17 +25,25 @@ def test_parse_gpx_file_wpt():
 		assert dps.time_difference() == timedelta(seconds=26)
 		print('Assertion of time_difference passed pre modification')
 
-		dps.reduce_time_by_time(20)
+		dps.reduce_time_by_time(timedelta(seconds=16))
 
-		assert dps.time_difference() == timedelta(seconds=6)
-		print('Assertion of time_difference passed post modification')
+		assert dps.time_difference() == timedelta(seconds=10)
+		print('Assertion of time_difference passed post absolute modification')
 
+		dps.reduce_time_by_percentage(50)
+
+		assert dps.time_difference() == timedelta(seconds=5)
+		print('Assertion of time_difference passed post percentage modification')
 
 	except:
-		print('Assertion of data_point_count() failed.')
+		print('An assertion failed.')
+
+	else: 
+		print('All assertions passed.')
 
 
 def test_parse_gpx_file_trkpt():
+	print('******************')
 	print('Running test_parse_gpx_file_2')
 	dps = DataPoints('./tests/sample_gpx2.gpx', 'trkpt')
 	try:
@@ -50,13 +59,21 @@ def test_parse_gpx_file_trkpt():
 		assert dps.time_difference() == timedelta(seconds=3889)
 		print('Assertion of time_difference passed pre modification')
 
-		dps.reduce_time_by_time(2000)
+		dps.reduce_time_by_time(timedelta(seconds=1889))
 
-		assert dps.time_difference() == timedelta(seconds=1889)
-		print('Assertion of time_difference passed post modification')
+		assert dps.time_difference() == timedelta(seconds=2000)
+		print('Assertion of time_difference passed post absolute modification')
+
+		dps.reduce_time_by_percentage(50)
+
+		assert dps.time_difference() == timedelta(seconds=1000)
+		print('Assertion of time_difference passed post percentage modification')
 
 	except:
-		print('Assertions of data_point_count() failed.')
+		print('An assertion failed.')
+
+	else: 
+		print('All assertions passed.')
 
 
 test_parse_gpx_file_wpt()
