@@ -1,4 +1,5 @@
 import sys
+from datetime import timedelta
 
 sys.path.insert(0, '/Users/lanezimmerman/Documents/cheata')
 
@@ -8,8 +9,9 @@ from data import DataPoint, DataPoints
 # from within this file. 
 
 
-def test_parse_gpx_file_1():
-	dps = DataPoints('./tests/sample_gpx1.gpx')
+def test_parse_gpx_file_wpt():
+	print('Running test_parse_gpx_file_1')
+	dps = DataPoints('./tests/sample_gpx1.gpx', 'wpt')
 	try:
 		assert dps.data_point_count() == 6
 		print('Assertion of data_point_count() passed.')
@@ -19,13 +21,22 @@ def test_parse_gpx_file_1():
 		assert dps.max_time() > dps.min_time()
 		print('Assertion of min and max times passed.')
 
+		assert dps.time_difference() == timedelta(seconds=26)
+		print('Assertion of time_difference passed pre modification')
+
+		dps.reduce_time_by_time(20)
+
+		assert dps.time_difference() == timedelta(seconds=6)
+		print('Assertion of time_difference passed post modification')
+
+
 	except:
 		print('Assertion of data_point_count() failed.')
 
-	print(dps.data_points)
 
-def test_parse_gpx_file_2():
-	dps = DataPoints('./tests/sample_gpx2.gpx')
+def test_parse_gpx_file_trkpt():
+	print('Running test_parse_gpx_file_2')
+	dps = DataPoints('./tests/sample_gpx2.gpx', 'trkpt')
 	try:
 		# assert dps.data_point_count() == 6
 		print('Assertion of data_point_count() passed.')
@@ -35,10 +46,18 @@ def test_parse_gpx_file_2():
 		assert dps.max_time() > dps.min_time()
 		print('Assertion of min and max times passed.')
 
+
+		assert dps.time_difference() == timedelta(seconds=3889)
+		print('Assertion of time_difference passed pre modification')
+
+		dps.reduce_time_by_time(2000)
+
+		assert dps.time_difference() == timedelta(seconds=1889)
+		print('Assertion of time_difference passed post modification')
+
 	except:
 		print('Assertions of data_point_count() failed.')
 
-	print(dps.data_points)
 
-test_parse_gpx_file_1()
-test_parse_gpx_file_2()
+test_parse_gpx_file_wpt()
+test_parse_gpx_file_trkpt()

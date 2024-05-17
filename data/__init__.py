@@ -48,15 +48,15 @@ class DataPoints():
 		data_points = []
 
 		if node_type == 'wpt':
-			for root_child in root:
+			for wpt in root:
 				data_dict = {
-					"lat": root_child.attrib['lat'],
-					"lon": root_child.attrib['lon'],
+					"lat": wpt.attrib['lat'],
+					"lon": wpt.attrib['lon'],
 					"ele": None, 
 					"time": None, 
 					"extensions": None
 				}
-				for child in root_child:
+				for child in wpt:
 					key = child.tag.split('}')[1]
 					data_dict[key] = child.text
 				dp = DataPoint(
@@ -134,10 +134,7 @@ class DataPoints():
 			raise Exception('You cannot reduce the file by more time than its total elapsed time.')
 
 		for dp in self.data_points:
-			# new_dt = dp.date - timedelta(seconds=dp.normalized_date * amount)
 			dp.date = dp.date - timedelta(seconds=dp.normalized_date * amount)
-			# print(new_dt)
-			print(dp)
 
 
 
