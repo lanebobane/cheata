@@ -126,7 +126,6 @@ class DataPoints():
 		if amount >= 100:
 			raise Exception('You cannot reduce the file by 100% or more.')
 
-		# ignore fractional seconds in current time_difference().
 		self.reduce_time_by_time((amount/100)*self.time_difference())
 
 
