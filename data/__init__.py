@@ -28,17 +28,25 @@ class DataPoint():
 				"lat": self.lat,
 				"lon": self.lon,
 				"ele": self.elevation,
-				"date": self.date.strftime("%m/%d/%Y, %H:%M:%S"),
+				"date": self.date.strftime(TIME_FORMAT),
 				"normalized_date": self.normalized_date,
 				"extensions": self.extensions
 			}
 		, sort_keys=True, indent=4)
 
 
+WPT = 'wpt'
+TRKPT = 'trkpt'
+ELE = 'ele'
+TIME = 'time'
+TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
+
 class DataPoints():
 
 	def __init__(self, file_name, node_type):
 		self.data_points = self._parse_gpx_file(file_name, node_type)
+		self.file_name = file_name
+		self.node_type = node_type
 		self.normalize_dates()
 
 	def _parse_gpx_file(self, file_name, node_type):
@@ -137,4 +145,69 @@ class DataPoints():
 			dp.date = dp.date - (dp.normalized_date * delta)
 
 
+WPT_GPX_ATTRIBS = {
+		"version":"1.1",
+	  	"creator":"Runkeeper - http://www.runkeeper.com",
+	  	"xmlns":"http://www.topografix.com/GPX/1/1",
+	  	"xmlns:gpxtpx":"http://www.garmin.com/xmlschemas/TrackPointExtension/v1",
+	  	"xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
+	  	"xsi:schemaLocation":"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd",
+	}
 
+TPKPT_GPX_ATTRIBS = {
+	"version":"1.1",
+    "creator":"StravaGPX",
+    "xmlns":"http://www.topografix.com/GPX/1/1",
+    "xmlns:xsi":"http://www.w3.org/2001/XMLSchema-instance",
+    "xsi:schemaLocation":"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd",
+}
+
+class XMLBuilder():
+
+	def __init__(self, data_points: DataPoints):
+		self.data_points = data_points
+		self.xml = self._build_xml_element()
+		self.built_xml = ET.tostring(self.xml)
+
+	def __repr__(self):
+		return self.built_xml
+
+	
+	"""
+	a = ET.Element('a')
+	b = ET.SubElement(a, 'b')
+	c = ET.SubElement(a, 'c')
+	d = ET.SubElement(c, 'd')
+	ET.dump(a)
+	<a><b /><c><d /></c></a>
+
+
+	class xml.etree.ElementTree.Element(tag, attrib={}, **extra)¶
+
+	"""
+	def _build_xml_element(self):
+		# <?xml version="1.0" encoding="UTF-8"?>
+		# TODO : Add attribs
+		xml_root = ET.Element('xml')
+
+		gpx = ET.SubElement(xml_root, 'gpx', self._find_gpx_attribs_by_node_type())
+
+		if self.data_points.node_type == WPT:
+			# todo: maybe rename the first data_points? 
+			for dp in self.data_points.data_points:
+				attribs = {"lat": dp.lat, "lon": dp.lon}
+				wpt_ele = ET.SubElement(gpx, WPT, attribs)
+				ele = ET.SubElement(wpt_ele, ELE)
+				ele.text = str(dp.elevation)
+				time = ET.SubElement(wpt_ele, TIME)
+				time.text = dp.date.strftime(TIME_FORMAT)
+				# TODO LEAVEOFF: how do I add "value" to these sub elements/"
+
+		return xml_root
+
+
+	def _find_gpx_attribs_by_node_type(self):
+		if self.data_points.node_type == WPT:
+			return WPT_GPX_ATTRIBS
+		elif self.data_points.node_type == TRKPT:
+			return TPKPT_GPX_ATTRIBS
