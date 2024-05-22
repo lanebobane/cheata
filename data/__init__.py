@@ -191,10 +191,11 @@ class XMLBuilder():
 
 	"""
 	def _build_xml_element(self):
-		xml_attribs = {'version': '1.0', 'encoding': 'UTF-8'}
-		xml_root = ET.Element('xml', xml_attribs)
+		# xml_attribs = {'version': '1.0', 'encoding': 'UTF-8'}
+		# xml_root = ET.Element('xml', xml_attribs)
 
-		gpx_element = ET.SubElement(xml_root, 'gpx', self._find_gpx_attribs_by_node_type())
+		# gpx_element = ET.SubElement(xml_root, 'gpx', self._find_gpx_attribs_by_node_type())
+		gpx_element = ET.Element('gpx', self._find_gpx_attribs_by_node_type())
 
 		if self.data_points.node_type == WPT:
 			# todo: maybe rename the first data_points? 
@@ -233,7 +234,8 @@ class XMLBuilder():
 				time_element = ET.SubElement(trkpt_element, TIME)
 				time_element.text = dp.date.strftime(OUTPUT_TIME_FORMAT)
 
-		return xml_root
+		# return xml_root
+		return gpx_element
 
 
 	def _find_gpx_attribs_by_node_type(self):
@@ -244,4 +246,6 @@ class XMLBuilder():
 
 	def write_file(self):
 		tree = ET.ElementTree(self.xml_element)
-		tree.write(f'output_files/GPX_{datetime.now()}.xml')
+		file_name = f'output_files/GPX_{datetime.now().strftime(OUTPUT_TIME_FORMAT)}.gpx' 
+		tree.write(file_name, encoding='utf-8', xml_declaration=True)
+		return file_name
