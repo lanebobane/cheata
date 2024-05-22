@@ -17,7 +17,7 @@ class DataPoint():
 		self.lat = lat
 		self.lon = lon
 		self.elevation = elevation
-		self.date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ")
+		self.date = datetime.strptime(date, OUTPUT_TIME_FORMAT)
 		self.normalized_date = None
 		self.extensions = extensions if \
 			extensions != "\n      " else ''
@@ -28,7 +28,7 @@ class DataPoint():
 				"lat": self.lat,
 				"lon": self.lon,
 				"ele": self.elevation,
-				"date": self.date.strftime(TIME_FORMAT),
+				"date": self.date.strftime(PARSE_TIME_FORMAT),
 				"normalized_date": self.normalized_date,
 				"extensions": self.extensions
 			}
@@ -37,9 +37,15 @@ class DataPoint():
 
 WPT = 'wpt'
 TRKPT = 'trkpt'
+TRK = 'trk'
+NAME = 'name'
+TYPE = 'type'
+TRKSEG = 'trkseg'
 ELE = 'ele'
 TIME = 'time'
-TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
+PARSE_TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
+OUTPUT_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+METADATA = 'metadata'
 
 class DataPoints():
 
@@ -166,11 +172,10 @@ class XMLBuilder():
 
 	def __init__(self, data_points: DataPoints):
 		self.data_points = data_points
-		self.xml = self._build_xml_element()
-		self.built_xml = ET.tostring(self.xml)
+		self.xml_element = self._build_xml_element()
 
 	def __repr__(self):
-		return self.built_xml
+		return ET.tostring(self.xml_element).decode('utf-8')
 
 	
 	"""
@@ -186,22 +191,47 @@ class XMLBuilder():
 
 	"""
 	def _build_xml_element(self):
-		# <?xml version="1.0" encoding="UTF-8"?>
-		# TODO : Add attribs
-		xml_root = ET.Element('xml')
+		xml_attribs = {'version': '1.0', 'encoding': 'UTF-8'}
+		xml_root = ET.Element('xml', xml_attribs)
 
-		gpx = ET.SubElement(xml_root, 'gpx', self._find_gpx_attribs_by_node_type())
+		gpx_element = ET.SubElement(xml_root, 'gpx', self._find_gpx_attribs_by_node_type())
 
 		if self.data_points.node_type == WPT:
 			# todo: maybe rename the first data_points? 
 			for dp in self.data_points.data_points:
 				attribs = {"lat": dp.lat, "lon": dp.lon}
-				wpt_ele = ET.SubElement(gpx, WPT, attribs)
-				ele = ET.SubElement(wpt_ele, ELE)
+				wpt_element = ET.SubElement(gpx_element, WPT, attribs)
+				ele = ET.SubElement(wpt_element, ELE)
 				ele.text = str(dp.elevation)
-				time = ET.SubElement(wpt_ele, TIME)
-				time.text = dp.date.strftime(TIME_FORMAT)
-				# TODO LEAVEOFF: how do I add "value" to these sub elements/"
+				time = ET.SubElement(wpt_element, TIME)
+				time.text = dp.date.strftime(OUTPUT_TIME_FORMAT)
+
+		if self.data_points.node_type == TRKPT:
+			
+			# 2. Add Trk element with name, type and trkseg elements
+			# 3. Add trkpt elements to the trkseg element
+			metadata_element = ET.SubElement(gpx_element, METADATA)
+			meta_time_element = ET.SubElement(metadata_element, TIME)
+			meta_time_element.text = self.data_points.data_points[0].date.strftime(OUTPUT_TIME_FORMAT)
+
+			trk_element = ET.SubElement(gpx_element, TRK)
+			#TODO: Get these values from the initial file.
+			name_element = ET.SubElement(trk_element, NAME)
+			name_element.text = "PLACEHOLDER NAME"
+			type_element = ET.SubElement(trk_element, TYPE)
+			type_element.text = "PLACEHOLDER TYPE"
+
+			trkseg_element = ET.SubElement(trk_element, TRKSEG)
+
+			for dp in self.data_points.data_points:
+				attribs = {"lat": dp.lat, "lon": dp.lon}
+				trkpt_element = ET.SubElement(trkseg_element, TRKPT, attribs)
+
+				ele_element = ET.SubElement(trkpt_element, ELE)
+				ele_element.text = dp.elevation
+
+				time_element = ET.SubElement(trkpt_element, TIME)
+				time_element.text = dp.date.strftime(OUTPUT_TIME_FORMAT)
 
 		return xml_root
 
@@ -211,3 +241,7 @@ class XMLBuilder():
 			return WPT_GPX_ATTRIBS
 		elif self.data_points.node_type == TRKPT:
 			return TPKPT_GPX_ATTRIBS
+
+	def write_file(self):
+		tree = ET.ElementTree(self.xml_element)
+		tree.write(f'output_files/GPX_{datetime.now()}.xml')
