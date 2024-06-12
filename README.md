@@ -4,6 +4,10 @@
 
 If you have used Strava or similar public leaderboard apps for timed sports, you have likely encountered some clearly bogus entries. The services usually have a "report suspicious" feature, but some of the entries are so clearly bogus it made me wonder how easy it would be to manipulate and post bogus data. This repository comprise the tools I built to test this out. 
 
+## Note about malicious use
+
+While this tools allows you to falsify GPX data, the point is to investigate the ease of cheating, not to actually cheat. As such, all testing has been done in "private mode" on leaderboards, only to see if the leaderboards can detect the false data. Anyone who uses this utility is urged to follow this pattern of behavior. 
+
 ## Usage
 
 You can enter a shell environment by running: 
