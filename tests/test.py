@@ -1,7 +1,7 @@
 import sys
 from datetime import timedelta
 
-sys.path.insert(0, '/Users/lanezimmerman/Documents/cheata')
+sys.path.insert(0, '/Users/lanezimmerman/cheata')
 
 from data import DataPoint, DataPoints, XMLBuilder
 

@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import json
+import random
 from datetime import datetime, timedelta
 
 # https://docs.python.org/3/library/xml.etree.elementtree.html
@@ -46,6 +47,7 @@ TIME = 'time'
 PARSE_TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
 OUTPUT_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 METADATA = 'metadata'
+JITTER = .000001
 
 class DataPoints():
 
@@ -64,8 +66,8 @@ class DataPoints():
 		if node_type == 'wpt':
 			for wpt in root:
 				data_dict = {
-					"lat": wpt.attrib['lat'],
-					"lon": wpt.attrib['lon'],
+					"lat": float(wpt.attrib['lat']) + random.randrange(-5,5,1)*JITTER,
+					"lon": float(wpt.attrib['lon']) + random.randrange(-5,5,1)*JITTER,
 					"ele": None, 
 					"time": None, 
 					"extensions": None
