@@ -18,6 +18,6 @@ from within the repo. This will open an interactive shell with some test data in
 
 ## Roadmap
 
-1. Add GPS randomization to prevent similarity between reference file and output file. 
+1. ~Add GPS randomization to prevent similarity between reference file and output file.~
 2. Create command flags to prevent need for interactive shell. 
 3. Recreate some core functionality offered by other similar tools (timing, segments, other stats).
